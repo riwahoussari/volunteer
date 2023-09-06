@@ -28,5 +28,5 @@ const orgSchema = new mongoose.Schema ({
 orgSchema.plugin(passportLocalMongoose)
 const Org = new mongoose.model('org', orgSchema)
 
-
 export default Org;
+

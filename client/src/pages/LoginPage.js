@@ -45,6 +45,7 @@ export function UserLoginPage(){
         }).then(res => {
             if(res.success){
                 navigate('../../', {replace: true})
+                sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user: res.user}) )
             }else{
                 throw Error(res.message)
             }
@@ -107,6 +108,7 @@ export function OrgLoginPage(){
         }).then(res => {
             if(res.success){
                 navigate('../../', {replace: true})
+                sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user: res.user}))
             }else{
                 throw Error(res.message)
             }

@@ -2,7 +2,6 @@ import { PersonRounded, ArrowCircleRightOutlined as Arrow, FavoriteBorderRounded
 import {NavLink} from 'react-router-dom'
 import { CardLikeButton } from "./LikeButton";
 export default function Card({post, auth}){
-    // let {day, month, eventName, orgName, rgVolNb, rqVolNb, id} = props;
     //set page color
     let color;
     const today = new Date().getTime();
@@ -15,7 +14,7 @@ export default function Card({post, auth}){
 
             <div className="img"></div>
 
-            <NavLink to={`/posts/${post._id}`}>
+            <NavLink to={`/posts/${post._id}`} state={{post, color}}>
                 <div className="card-content">
                     <div className="card-content-text">
                         <p className="card-event-name">{post.eventName}</p>
@@ -26,7 +25,6 @@ export default function Card({post, auth}){
             </NavLink>
 
             <div className="date"><span>{post.startDate[0]}</span><span>{post.startDate[1].slice(0, 3)}</span></div>
-            {console.log(auth)}
             {auth.auth && <CardLikeButton post={post} auth={auth}/>}
             
             

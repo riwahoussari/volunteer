@@ -1,15 +1,17 @@
 import Header from "../components/Header";
-import { Link, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
-import { HandymanOutlined, LocationOnRounded, PersonRounded } from "@mui/icons-material";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { LocationOnRounded, PersonRounded } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import { useUser } from "../hooks/useUser";
 export default function PostApplyPage(){
     const navigate = useNavigate();
     const {postId} = useParams();
     const {state} = useLocation();
     const [infoFetch, setInfoFetch] = useState({org: null, post: null, auth: null, isPending: false, error: false})
+    const userInfo = useUser();
     useEffect(()=>{
-        if(state){
-            if(state.post.applications.includes(state.auth.user._id)){
+        if(state && userInfo.auth){
+            if(state.post.applications.includes(userInfo.user._id)){ //if user already applied
                 setInfoFetch({org: state.org, post: state.post, auth: null, isPending: true, error: null})
                 fetch(`http://localhost:2500/applications/post/${postId}`, {method: 'GET', credentials: 'include'})
                 .then(res=>{
@@ -29,7 +31,7 @@ export default function PostApplyPage(){
                         setInfoFetch({org: state.org, post: state.post, auth: null, isPending: false, error: err.message})
                     })
             }else{
-                setInfoFetch({org: state.org, post: state.post, auth: state.auth, isPending: false, error: null})
+                setInfoFetch({org: state.org, post: state.post, auth: userInfo, isPending: false, error: null})
             }
         }else{
             setInfoFetch({org: null, post: null, auth: null, isPending: true, error: null})
@@ -48,7 +50,7 @@ export default function PostApplyPage(){
                     setInfoFetch({org: null,post: null, auth: null, isPending: false, error: err.message})
                 })
         }
-    }, [])
+    }, [userInfo])
     let color = '';
     let today = new Date().getTime();
     if(infoFetch.post){

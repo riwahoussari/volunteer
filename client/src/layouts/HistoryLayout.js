@@ -1,33 +1,13 @@
 import Header from "../components/Header";
 import Nav from "../components/Nav";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import CardsContainer from "../components/CardsContainer";
+import {useUser} from '../hooks/useUser';
 export default function HistoryLayout(){
     const navigate = useNavigate();
-    const {state} = useLocation();
-    const [authFetch, setAuthFetch] = useState({data: null, isPending: false, error: null});
-    useEffect(()=>{
-        if(state && state.auth){
-            setAuthFetch({data: state, isPending: false, error: null})
-        }else{
-            setAuthFetch({data: null, isPending: true, error: null})
-            fetch(`http://localhost:2500/auth/user`, {credentials: 'include'})
-            .then(res=>{
-                    if(!res.ok){
-                        throw Error('could not fetch data for that resource')
-                    }
-                    return res.json()
-                })
-                .then(data => {
-                    setAuthFetch({data: data, isPending: false, error: null})
-                })
-                .catch(err => {
-                    setAuthFetch({data: null, isPending: false, error: err.message})
-                })
-        }
-    }, [])
-
+    const userInfo = useUser();
+    
     //change resource function for navbar
     const [resource, setResource] = useState({name: 'applications', color: 'blue'})
     function changeResource(newResource){
@@ -56,8 +36,8 @@ export default function HistoryLayout(){
             })
     }, [resource.name])
     return <>
-        {authFetch.data && !authFetch.data.auth && navigate('../login')}
-        {authFetch.data && authFetch.data.auth && <>
+        {userInfo && !userInfo.auth && navigate('../login')}
+        {userInfo && userInfo.auth && <>
         <Header 
             icons={{left: ['back'], right: []}}
             text='My Events History'
@@ -67,8 +47,7 @@ export default function HistoryLayout(){
         
         {postsFetch.isPending && <p>Loading...</p>}
         {postsFetch.error && <p>{postsFetch.error}</p>}
-        {postsFetch.posts && console.log(postsFetch.posts)}
-        {postsFetch.posts && authFetch.data && <CardsContainer Posts={postsFetch.posts} auth={authFetch.data}/>}
+        {postsFetch.posts && <CardsContainer Posts={postsFetch.posts} auth={userInfo}/>}
         </>}
         
     </>

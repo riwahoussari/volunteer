@@ -19,7 +19,22 @@ authRouter.get('/google/redirect', passport.authenticate('google', {failureRedir
             }
         }));
     }else{
-        res.redirect('http://localhost:3000/')
+        let user = new URLSearchParams({
+            _id: req.user.id,
+            userType: req.user.userType,
+            fullName: req.user.fullName,
+            skills: req.user.skills,
+            events: req.user.events,
+            likes: req.user.likes,
+            address: req.user.address,
+            bio: req.user.bio,
+            dob: req.user.dob,
+            email: req.user.email,
+            gender: req.user.gender,
+            phoneNb: req.user.phoneNb,
+            profilePic: req.user.profilePic
+        }).toString();
+        res.redirect('http://localhost:3000/home/user/decode?' + user)
     }
 })
 // facebook routes
@@ -32,7 +47,22 @@ authRouter.get('/facebook/redirect', passport.authenticate('facebook', {failureR
             query: { fullName: req.user.fullName }
         }));
     }else{
-        res.redirect('http://localhost:3000/')
+        let user = new URLSearchParams({
+            _id: req.user.id,
+            userType: req.user.userType,
+            fullName: req.user.fullName,
+            skills: req.user.skills,
+            events: req.user.events,
+            likes: req.user.likes,
+            address: req.user.address,
+            bio: req.user.bio,
+            dob: req.user.dob,
+            email: req.user.email,
+            gender: req.user.gender,
+            phoneNb: req.user.phoneNb,
+            profilePic: req.user.profilePic
+        }).toString();
+        res.redirect('http://localhost:3000/home/user/decode?' + user)
     }
 })
 

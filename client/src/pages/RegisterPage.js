@@ -349,6 +349,7 @@ export function RegisterUserStep4(){
             if(res.success){
                 setPostResult({isPending: false, err: false})
                 navigate('../../../', {replace: true})
+                sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user: res.user}))
             }else{
                 setPostResult({isPending: false, err: true})
             }
@@ -736,6 +737,7 @@ export function RegisterOrgStep5(){
             if(res.success){
                 setPostResult({isPending: false, err: false})
                 navigate('../../../', {replace: true})
+                sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user: res.user}))
             }else{
                 setPostResult({isPending: false, err: true})
             }

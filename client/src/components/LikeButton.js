@@ -44,7 +44,18 @@ export function CardLikeButton({post, auth}){
         })
         .then(res => res.json())
         .then(res => {
-            if(res.success){setIsLiked(!isLiked)}
+            if(res.success){
+                setIsLiked(prev => !prev);
+                //update likes in session storage
+                const storedUser = JSON.parse(sessionStorage.getItem('userInfo')).user;
+                let newLikes;
+                if(isLiked){//remove post
+                    newLikes = storedUser.likes.filter(like => like != post._id)
+                }else{//add post
+                    newLikes = [...storedUser.likes, post._id]
+                }
+                sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user: {...storedUser, likes: newLikes}}))
+            }
         })
         .catch((err) => console.log(err))
     }

@@ -62,19 +62,7 @@ app.get('/posts/:categ', (req, res)=>{
 })
 //get one post
 app.get('/post/:id', (req,res)=>{
-    Post.findOne({_id: req.params.id }).then(post => {
-        if(req.isAuthenticated()){
-            res.json({
-                auth: {auth: true, user: req.user},
-                post
-            })
-        }else{
-            res.json({
-                auth: {auth: false},
-                post
-            })
-        }
-    })
+    Post.findOne({_id: req.params.id }).then(post => {res.json(post)})
 })
 // post user info / update field 
 app.post('/user', bodyParser.json(),  (req, res)=>{
@@ -83,20 +71,29 @@ app.post('/user', bodyParser.json(),  (req, res)=>{
         const userInfo = req.body;
         User.findOneAndUpdate({_id: userId}, {
             ...userInfo
-        }).then(() => {
-            res.send(JSON.stringify({message: 'user info added successfully', success: true}))
+        },{new: true}).then(user => {
+            res.send(JSON.stringify({
+                success: true,
+                message: 'user info added successfully', 
+                user
+            }))
         }).catch(err => res.send(JSON.stringify({message: 'failed to add user information', success: false})))
     }
 })
 app.post('/org', bodyParser.json(),  (req, res)=>{
+    console.log('/org post request')
     if(req.isAuthenticated()){
         const orgId = req.user._id;
         const orgInfo = req.body;
         Org.findOneAndUpdate({_id: orgId}, {
             ...orgInfo
-        }).then(() => {
-            res.send(JSON.stringify({message: 'org info added successfully', success: true}))
-        }).catch(err => res.send(JSON.stringify({message: 'failed to add org information', success: false})))
+        },{new: true}).then(user => {
+            res.send(JSON.stringify({
+                success: true,
+                message: 'org info added successfully', 
+                user
+            }))
+        }).catch(err => res.send(JSON.stringify({message: err.message, success: false})))
     }
 })
 //get liked posts
@@ -105,10 +102,10 @@ app.get('/user/likes', (req, res)=>{
         let likes = req.user.likes;
         Post.find().then(posts => {
             posts = posts.filter(post => likes.includes(post._id))
-            res.json({posts: posts, auth: {auth: true, user: req.user}})
+            res.json({posts})
         })
     }else(
-        res.json({posts: null, auth: {auth: false, user: null}})
+        res.json({posts: null})
     )
 })
 // update liked posts

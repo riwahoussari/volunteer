@@ -1,28 +1,17 @@
 import { CheckRounded, EditRounded } from "@mui/icons-material"
 import { useRef, useState } from "react"
+import { useLocation } from "react-router-dom";
+import { useUser } from "../hooks/useUser";
 export default function InputField(props){
     const [isDisabled , setIsDisabled] = useState(true)
     let input;
     const [inputValue, setInputValue] = useState(props.value);
     const inputRef = useRef();
+    const userInfo = useUser();
     if(props.type === 'select'){
-        let options;
-        // if(props.value === 'male'){
-        //     options = (<>
-        //         <option value='male' selected>Male</option>
-        //         <option value='female'>Female</option>
-        //     </>)
-        // }else{
-        //     options = (<>
-        //         <option value='male'>Male</option>
-        //         <option value='female' selected>Female</option>
-        //     </>)
-        // }
-        console.log(props.value.toLowerCase())
         if(isDisabled){
             input = (
                 <select ref={inputRef} name={props.name} disabled defaultValue='male'>
-                    {/* {options} */}
                     <option value='male'>Male</option>
                     <option value='female'>Female</option>
                 </select>
@@ -32,7 +21,6 @@ export default function InputField(props){
                 <select ref={inputRef} name={props.name} defaultValue='male'>
                     <option value='male'>Male</option>
                     <option value='female'>Female</option>
-                    {/* {options} */}
                 </select>
             )
         }
@@ -64,17 +52,39 @@ export default function InputField(props){
     if(inputRef.current){inputRef.current.value = inputValue}
 
     function updateField(key, value){
-        fetch('http://localhost:2500/user', {
-            method: "POST",
-            headers: {"Content-Type": 'application/json'},
-            body: JSON.stringify({[key]: value}),
-            credentials: 'include'
-        })
-        .then(res => res.json())
-        .then(res => {
-            if(res.success){setInputValue(value)}
-        })
-        .catch((err) => console.log(err))
+        if(userInfo.user.userType === 'user'){
+            fetch('http://localhost:2500/user', {
+                method: "POST",
+                headers: {"Content-Type": 'application/json'},
+                body: JSON.stringify({[key]: value}),
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success){
+                    setInputValue(value)
+                    sessionStorage.setItem('userInfo', JSON.stringify({...userInfo, user: {...userInfo.user, [key]: value}}))
+                }
+            })
+            .catch((err) => console.log(err))
+        }else if(userInfo.user.userType === 'org'){
+            fetch('http://localhost:2500/org', {
+                method: "POST",
+                headers: {"Content-Type": 'application/json'},
+                body: JSON.stringify({[key]: value}),
+                credentials: 'include'
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.success){
+                    setInputValue(value)
+                    sessionStorage.setItem('userInfo', JSON.stringify({...userInfo, user: {...userInfo.user, [key]: value}}))
+                }
+            })
+            .catch((err) => console.log(err))
+        }else{
+            console.log('user type not recognized')
+        }
     }
     
     return(

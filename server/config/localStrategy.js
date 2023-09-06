@@ -92,7 +92,7 @@ const localLogin = (req, res)=>{
                     console.log(err)
                 }else{
                     passport.authenticate('user')(req, res, function(){
-                        res.json({success: true})
+                        res.json({success: true, user})
                     })
                 }
             })
@@ -117,7 +117,7 @@ const localOrgLogin = (req, res)=>{
                     console.log(err)
                 }else{
                     passport.authenticate('org')(req, res, function(){
-                        res.json({success: true})
+                        res.json({success: true, user})
                     })
                 }
             })

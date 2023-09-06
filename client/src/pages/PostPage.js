@@ -1,42 +1,54 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import { LocationOnRounded, PersonRounded } from "@mui/icons-material";
 import LikeButton from "../components/LikeButton";
 import { useState, useEffect, useRef } from "react";
+import {useUser} from '../hooks/useUser'
 
 export default function PostPage(){
     //post fetch
     const {postId} = useParams();
-    const [postFetch, setPostFetch] = useState({post: null,auth: null, isPending: false, error: null});
+    const [postFetch, setPostFetch] = useState({post: null, isPending: false, error: null});
     const color = useRef('black');
     const noMoreSpots = useRef(false);
     const userApplied = useRef(false);
+    const userInfo = useUser(); 
+
+    const {state} = useLocation();
     useEffect(()=>{
-        setPostFetch({post: null, auth: null, isPending: true, error: null})
-        fetch(`http://localhost:2500/post/${postId}`, {credentials: 'include'})
-        .then(res=>{
-                if(!res.ok){
-                    throw Error('could not fetch post')
-                }
-                return res.json()
-            })
-            .then(data => {
-                setPostFetch({post: data.post, auth: data.auth, isPending: false, error: null})
-                //set page color
-                const today = new Date().getTime();
-                if(new Date(data.post.endDate.join(' ')).getTime() < today){color.current = 'red'}
-                else if(new Date(data.post.startDate.join(' ')).getTime() > today){color.current = 'blue'}
-                else if(new Date(data.post.endDate.join(' ')).getTime() > today && 
-                new Date(data.post.startDate.join(' ')).getTime() < today){color.current = 'green'}
-                // check if all spots are registered
-                if(Number(data.post.volNb[0]) >= Number(data.post.volNb[1])){noMoreSpots.current = true}
-                //check if user already applied to the post
-                if(data.post.applications.includes(data.auth.user._id)){userApplied.current = true}
-            })
-            .catch(err => {
-                setPostFetch({post: null, auth: null, isPending: false, error: err.message})
-            })
-    }, [])
+        if(state && userInfo.auth !== null){
+            setPostFetch({post: state.post, isPending: false, error: null});
+            color.current = state.color;
+            if(Number(state.post.volNb[0]) >= Number(state.post.volNb[1])){noMoreSpots.current = true}
+            if(userInfo.auth && state.post.applications.includes(userInfo.user.id)){userApplied.current = 'true'}
+            else{userApplied.current = 'false'}
+        }else{
+
+            setPostFetch({post: null, isPending: true, error: null})
+            fetch(`http://localhost:2500/post/${postId}`, {credentials: 'include'})
+            .then(res=>{
+                    if(!res.ok){
+                        throw Error('could not fetch post')
+                    }
+                    return res.json()
+                })
+                .then(data => {
+                    setPostFetch({post: data, isPending: false, error: null})
+                    //set page color
+                    const today = new Date().getTime();
+                    if(new Date(data.post.endDate.join(' ')).getTime() < today){color.current = 'red'}
+                    else if(new Date(data.post.startDate.join(' ')).getTime() > today){color.current = 'blue'}
+                    else if(new Date(data.post.endDate.join(' ')).getTime() > today && 
+                    new Date(data.post.startDate.join(' ')).getTime() < today){color.current = 'green'}
+                    // check if all spots are registered
+                    if(Number(data.post.volNb[0]) >= Number(data.post.volNb[1])){noMoreSpots.current = true}
+                })
+                .catch(err => {
+                    setPostFetch({post: null, isPending: false, error: err.message})
+                })
+
+        }
+    }, [userInfo])
 
     //fetch organization
     const [orgFetch, setOrgFetch] = useState({org: null, isPending: false, error: null});
@@ -61,8 +73,6 @@ export default function PostPage(){
         }
     }, [postFetch])
     
-
-
     return(<>
         {postFetch.isPending && <p>Loading post...</p>}
         {postFetch.error && <p>{postFetch.error}</p>}
@@ -135,14 +145,13 @@ export default function PostPage(){
                 </div>
             </div>
             <div className="buttons" key={'buttons'}>
-                {postFetch.auth.auth && <LikeButton key={'likeButton'} post={postFetch.post} auth={postFetch.auth}/>}
+                {userInfo.auth && <LikeButton key={'likeButton'} post={postFetch.post} auth={userInfo}/>}
     
                 {/* See Application */}
                 {userApplied.current ?
                     <Link key={'button'}
                         to={`/posts/apply/${postId}`} 
                         state={{
-                            auth: postFetch.auth,
                             org: orgFetch.org,
                             post: postFetch.post,
                         }} >
@@ -155,11 +164,10 @@ export default function PostPage(){
                         (noMoreSpots.current ? 
                             <div className="apply-now-btn apply-now-btn-disabled" key={'button'}>No More Spots</div>:
                             /* Apply Now */
-                            (postFetch.auth.auth ?
+                            (userInfo.auth ?
                             <Link key={'button'}
                                 to={`/posts/apply/${postId}`} 
                                 state={{
-                                auth: postFetch.auth,
                                 org: orgFetch.org,
                                 post: postFetch.post,
                             }} >

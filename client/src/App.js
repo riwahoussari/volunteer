@@ -2,7 +2,7 @@ import {createBrowserRouter, Route, createRoutesFromElements, RouterProvider, Na
 //layouts
 import HistoryLayout from './layouts/HistoryLayout.js';
 //pages
-import HomePage from './pages/HomePage.js';
+import HomePage, {HomeUserDecode} from './pages/HomePage.js';
 import FavoritesPage from './pages/FavoritesPage';
 import PostPage from './pages/PostPage.js';
 import PostApplyPage from './pages/PostApplyPage.js';
@@ -12,11 +12,16 @@ import {LoginPage, UserLoginPage, OrgLoginPage} from './pages/LoginPage.js';
 import {Register, RegisterUserStep1, RegisterUserStep2, RegisterUserStep3, RegisterUserStep4, RegisterUserDecode, RegisterOrgStep1, RegisterOrgStep2, RegisterOrgStep3, RegisterOrgStep4, RegisterOrgStep5 } from './pages/RegisterPage.js';
 
 
+
+
+import Test from './pages/test.js'
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route>
-
+      <Route path='test' element={<Test/>}/>
       <Route path='/' element={<HomePage />} />
+      <Route path='/home/user/decode' element={<HomeUserDecode />}/>
       
       <Route path='/favorites' element={<FavoritesPage />}/>
 
