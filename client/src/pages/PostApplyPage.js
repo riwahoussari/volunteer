@@ -68,13 +68,23 @@ export default function PostApplyPage(){
         })
         .then(res => res.json())
         .then(res => {
-            if(res.success){console.log('applictions sent successfully')}
+            if(res.success){
+                console.log('applictions sent successfully')
+                const storedUser = JSON.parse(sessionStorage.getItem('userInfo'))
+                sessionStorage.setItem('userInfo', JSON.stringify({
+                    ...storedUser,
+                    user: {
+                        ...storedUser.user, 
+                        applications: [...storedUser.user.applications, postId]}
+                }))
+            }
         })
         .catch((err) => console.log(err))
     }
     return(
     <>
         {infoFetch.auth && !infoFetch.auth.auth && navigate('../../../login', {replace: true})}
+        {userInfo.auth && userInfo.user.userType === 'org' && navigate('../../../', {replace: true})}
         {infoFetch.auth && infoFetch.post && infoFetch.org && <>
         <Header 
             icons={{left: ['back'], right: []}}
@@ -130,7 +140,10 @@ export default function PostApplyPage(){
                     <p key={'bio'}><span className="blockSpan">Bio: </span>{infoFetch.auth.user.bio}</p>
                 </div>
             </div>
-            {infoFetch.post.applications.includes(infoFetch.auth.user._id) ? 
+            {
+            infoFetch.auth.user.applications.includes(infoFetch.post._id)
+            ? 
+                
                 <div className="button-div" key={'buttonDiv'}>
                     <p>Status: <span>Under Review</span></p>
                     <button type="button" className="apply-btn apply-btn-disabled">Applied</button>

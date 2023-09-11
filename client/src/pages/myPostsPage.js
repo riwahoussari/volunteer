@@ -2,36 +2,11 @@ import Header from '../components/Header'
 import Nav from '../components/Nav'
 import { useEffect, useState } from 'react'
 import CardsContainer from '../components/CardsContainer'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { useUser } from '../hooks/useUser'
+import { Navigate, useNavigate } from 'react-router-dom'
 
-export function HomeUserDecode(){
-    //getting user info after loggin in with facebook or google to avoid an unnecessary api fetch request
-    const navigate = useNavigate()
-    const {search} = useLocation()
-    const arr = decodeURIComponent(search).split('&')
-    
-    const user = {
-        id: arr[0].split('=')[1],
-        userType: arr[1].split('=')[1],
-        fullName: arr[2].split('=')[1].split('+').join(' '),
-        skills: arr[3].split('=')[1].split('+').join(' ').split(','),
-        events: arr[4].split('=')[1].split(','),
-        likes: arr[5].split('=')[1].split(','),
-        address: arr[6].split('=')[1].split('+').join(' '),
-        bio: arr[7].split('=')[1].split('+').join(' '),
-        dob: arr[8].split('=')[1],
-        email: arr[9].split('=')[1],
-        gender: arr[10].split('=')[1],
-        phoneNb: arr[11].split('=')[1].split('+').join(''),
-        profilePic: arr[12].split('=')[1]
-    }
-    useEffect(()=>{
-        navigate('../../../', {replace: true, state: {auth: {auth: true, user}}})
-    }, [])
-}
 
-export default function HomePage(){
+export default function MyPostsPage(){
     //user authentication
     const userInfo = useUser();
 
@@ -44,7 +19,7 @@ export default function HomePage(){
     const [postsFetch, setpostsFetch] = useState({data: null, isPending: false, error: null})
     useEffect(()=>{
         setpostsFetch({data: null, isPending: true, error: null})
-        fetch(`http://localhost:2500/posts/${resource.name}`)
+        fetch(`http://localhost:2500/org/posts/${resource.name}`, {credentials: 'include'})
         .then(res=>{
                 if(!res.ok){
                     throw Error('could not fetch data for that resource')
@@ -58,6 +33,8 @@ export default function HomePage(){
                 setpostsFetch({data: null, isPending: false, error: err.message})
             })
     }, [resource.name])
+
+    const navigate = useNavigate()
     return (
         <>
             {(userInfo && userInfo.isPending) ? <h1>Pending</h1> : 
@@ -66,12 +43,10 @@ export default function HomePage(){
                 icons={{left: ['signup'], right: ['login']}}
                 text=''
             /> : ( userInfo.user.userType === 'user' ?
-                <Header 
-                icons={{left: ['history', 'favorite'], right: ['profile']}}
-                text=''
-            />:<Header 
-                icons={{left: ['myPosts', 'addPost'], right: ['favorite','profile']}}
-                text=''
+                <Navigate to="../" replace="true"/>
+            : <Header 
+                icons={{left: ['home'], right: ['profile']}}
+                text='My Posts'
             />
             ))
             }

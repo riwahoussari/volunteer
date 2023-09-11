@@ -36,8 +36,9 @@ export default function HistoryLayout(){
             })
     }, [resource.name])
     return <>
-        {userInfo && !userInfo.auth && navigate('../login')}
-        {userInfo && userInfo.auth && <>
+        {userInfo && !userInfo.auth && navigate('../login', {replace: 'true'})}
+        {userInfo && userInfo.auth && userInfo.user.userType === 'org' && navigate('../', {replace: 'true'})}
+        {userInfo && userInfo.auth && userInfo.user.userType === 'user' && <>
         <Header 
             icons={{left: ['back'], right: []}}
             text='My Events History'

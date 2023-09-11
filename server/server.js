@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import express from "express";
+import express, { application } from "express";
 const app = express()
 import mongoose from "mongoose";
 import passport from 'passport';
@@ -45,9 +45,9 @@ app.get('/posts/:categ', (req, res)=>{
         posts = posts.filter(post => {
             let endDate = new Date(post.endDate.join(' ')).getTime()
             let startDate = new Date(post.startDate.join(' ')).getTime()
-
             if(req.params.categ == 'past'){
                 if(today > endDate){return true}
+                else if(today > startDate && isNaN(endDate)){return true}
                 else{return false}
             }else if(req.params.categ === 'upcoming'){
                 if(startDate > today){return true}
@@ -109,20 +109,34 @@ app.get('/user/likes', (req, res)=>{
     )
 })
 // update liked posts
-app.post('/user/likes', bodyParser.json(), (req, res)=>{
+app.post('/user/likes', bodyParser.json(), async (req, res)=>{
     const userId = req.user._id;
     const postId = req.body.postId;
-    User.findOne({_id: userId}).then(user => {
-        let prevLikes = user.likes;
-        let newLikes;
+    let user;
+    if(req.user.userType === 'user'){
+        user = await User.findOne({_id: userId})
+        // User.findOne({_id: userId}).then(result => user = result)
+    }else if(req.user.userType === 'org'){
+        user = await Org.findOne({_id: userId})
+        // Org.findOne({_id: userId}).then(result => user = result)
+    }
 
-        if(req.body.add){newLikes = [...prevLikes, postId];}
-        else{newLikes = prevLikes.filter(like => like != postId);}
+    let prevLikes = user.likes
+    let newLikes;
+    if(req.body.add){newLikes = [...prevLikes, postId];}
+    else{newLikes = prevLikes.filter(like => like != postId);}
 
-        User.findOneAndUpdate({_id: userId}, {likes: newLikes}).then(() => {
-            res.send(JSON.stringify({message: 'favorite posts updated successfully', success: true}))
-        }).catch(() => res.send(JSON.stringify({message: 'failed to update favorite posts', success: false})))
-    })
+    try{
+        user.userType === 'user' ?
+            await User.findOneAndUpdate({_id: userId}, {likes: newLikes})
+        :
+            await Org.findOneAndUpdate({_id: userId}, {likes: newLikes})
+            
+    } catch (error) {
+        res.send(JSON.stringify({message: `failed to update favorite posts ${error.message}`, success: false}))
+    }
+    res.send(JSON.stringify({message: 'favorite posts updated successfully', success: true}))
+    
 })
 // get users applications' events (history/applications)
 app.get('/history/applications', (req, res)=>{
@@ -166,39 +180,52 @@ if(req.isAuthenticated()){
 }
 })
 // user application to a post 
-app.post('/post/apply/:postId', (req, res)=>{
+app.post('/post/apply/:postId', async (req, res)=>{
 if(req.isAuthenticated()){
-    Post.findOne({_id: req.params.postId}).then(post => {
-        if(post.volNb[0] === post.volNb[1]){res.json({success: false, message: 'no more spots'})}
-        else if(post.applications.includes(req.user._id)){res.json({success: false, message: 'user already applied'})}
-        else{
-            // add user id to post applications array
-            let newArr = [...post.applications, req.user._id]
-            Post.findOneAndUpdate({_id: req.params.postId}, {applications: newArr}).then(()=> {
-                // add applications to database
-                new Application ({
-                    postId: req.params.postId,
-                    orgId: post.orgId,
-                    userId: req.user._id,
-                    userInfo: {
-                        fullName: req.user.fullName,
-                        dob: req.user.dob,
-                        gender: req.user.gender,
-                        phoneNb: req.user.phoneNb,
-                        email: req.user.email,
-                        address: req.user.address,
-                        profilePic: req.user.profilePic,
-                        bio: req.user.bio,
-                        skills: req.user.skills
-                    }
-                }).save().then(()=>{
-                    res.json({success: true, message: 'application added successfully'})
-                }).catch(err => res.json({success: false, message: err.message}))
-            }).catch(err => res.json({success: false, message: err.message}))
-        }
-    }).catch(err => res.json({success: false, message: err.message}))
-}else{
-    res.json({success: false, message: 'user not authenticated'})
+    try {
+        var post = await Post.findOne({_id: req.params.postId})
+    } catch (err) {console.log(err)}
+
+    if(post.volNb[0] === post.volNb[1]){res.json({success: false, message: 'no more spots'})}
+    else if(req.user.applications.includes(req.params.postId)){res.json({success: false, message: 'user already applied'})}
+        
+    else{
+        //create new application
+        try {
+            var application = await new Application ({
+                postId: req.params.postId,
+                userId: req.user._id,
+                userInfo: {
+                    fullName: req.user.fullName,
+                    dob: req.user.dob,
+                    gender: req.user.gender,
+                    phoneNb: req.user.phoneNb,
+                    email: req.user.email,
+                    address: req.user.address,
+                    profilePic: req.user.profilePic,
+                    bio: req.user.bio,
+                    skills: req.user.skills
+                }
+            }).save()
+        } catch (err) {console.log(err)}
+        
+        try {
+            // store new application's id in post's applications array
+            // increment applied volunteers number by 1
+            post.volNb[0]++
+            post.applications.push(application.id)
+            await post.save()
+        } catch (err) {console.log(err)}
+
+        try {
+            // store post's id in user's applications array
+            await User.findOneAndUpdate({_id: req.user._id}, {$push: {applications: req.params.postId}})
+        } catch (err) {console.log(err)}
+                    
+        res.json({success: true, message: 'application added successfully'})
+                
+            
+    }
 }
 })
 // get application for user info at post apply page
@@ -209,6 +236,44 @@ app.get('/applications/post/:postId', (req, res)=>{
         })
     }else{
         res.json({success: false, message: 'user not authenticated'})
+    }
+})
+
+//get org's my posts
+app.get('/org/posts/:categ', (req, res)=>{
+    let today = new Date().getTime();    
+
+    Post.find({orgId: req.user.id}).then(posts => {
+        console.log(posts)
+        posts = posts.filter(post => {
+            let endDate = new Date(post.endDate.join(' ')).getTime()
+            let startDate = new Date(post.startDate.join(' ')).getTime()
+
+            if(req.params.categ == 'past'){
+                if(today > endDate){return true}
+                else{return false}
+            }else if(req.params.categ === 'upcoming'){
+                if(startDate > today){return true}
+                else{return false}
+            }if(req.params.categ === 'current'){
+                if(today > startDate && today < endDate){return true}
+                else{return false}
+            }
+        })
+        res.json(posts)
+    })
+})
+
+app.post('/addPost', bodyParser.json(), (req, res)=>{
+    if(req.isAuthenticated && req.user.userType === 'org'){
+        console.log(req.body)
+        new Post ({
+            ...req.body,
+            orgId: req.user.id,
+            orgName: req.user.orgName
+        }).save().then(newPost => {
+            Org.findOneAndUpdate({id: req.user._id}, {$push: {posts: newPost.id}}).then(()=> res.json({success: true}))
+        })
     }
 })
 

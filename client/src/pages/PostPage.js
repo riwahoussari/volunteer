@@ -20,9 +20,9 @@ export default function PostPage(){
             setPostFetch({post: state.post, isPending: false, error: null});
             color.current = state.color;
             if(Number(state.post.volNb[0]) >= Number(state.post.volNb[1])){noMoreSpots.current = true}
-            if(userInfo.auth && state.post.applications.includes(userInfo.user.id)){userApplied.current = 'true'}
-            else{userApplied.current = 'false'}
-        }else{
+            if(userInfo.auth && userInfo.user.userType === 'user' && userInfo.user.applications.includes(postId)){userApplied.current = true}
+            else{userApplied.current = false}
+        }else if(userInfo.auth !== null){
 
             setPostFetch({post: null, isPending: true, error: null})
             fetch(`http://localhost:2500/post/${postId}`, {credentials: 'include'})
@@ -148,7 +148,8 @@ export default function PostPage(){
                 {userInfo.auth && <LikeButton key={'likeButton'} post={postFetch.post} auth={userInfo}/>}
     
                 {/* See Application */}
-                {userApplied.current ?
+                {(!userInfo.auth || (userInfo.auth && userInfo.user.userType === 'user')) &&
+                    (userApplied.current ?
                     <Link key={'button'}
                         to={`/posts/apply/${postId}`} 
                         state={{
@@ -156,7 +157,7 @@ export default function PostPage(){
                             post: postFetch.post,
                         }} >
                         <div className="apply-now-btn">See Application</div>
-                    </Link>:
+                    </Link> :
                     /* Event Ended */
                     (color.current === 'red' ?
                         <div className="apply-now-btn apply-now-btn-disabled" key={'button'}>Event Ended</div>:
@@ -172,13 +173,19 @@ export default function PostPage(){
                                 post: postFetch.post,
                             }} >
                                 <div className="apply-now-btn">Apply Now</div>
-                            </Link> :
+                            </Link> : 
                             /* Log In */
                             <Link key={'button'} to={`/login`} >
                                 <div className="apply-now-btn">Log In</div>
-                            </Link>)
+                            </Link>
+                            )
                         )
                     )
+                )}
+                {userInfo.auth && userInfo.user.userType === 'org' && userInfo.user._id === orgFetch.org._id && 
+                    <Link key={'button'} to={`/posts/${postId}/applications`} >
+                        <div className="apply-now-btn">See Applications</div>
+                    </Link> 
                 }
             </div>
         </div>

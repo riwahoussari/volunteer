@@ -16,11 +16,14 @@ export default function Header(props){
                 {left.includes('homeBack') && <Link to='/'><Back/></Link>}
 
                 {left.includes('signup') && <Link to='/register'><button type='button'>SIGN UP</button></Link>}
+
+                {left.includes('myPosts') && <Link to='/myPosts'><button type='button'>My Posts</button></Link>}
+                {left.includes('addPost') && <Link to='/profile/addPost'><button type='button'>Add Post</button></Link>}
             </div>
             <p>{props.text}</p>
             <div className='rightIcons'>
                 {right.includes('history') && <HistoryRounded />}
-                {right.includes('favorite') && <FavoriteBorderRounded/>}
+                {right.includes('favorite') && <Link to='/favorites'><FavoriteBorderRounded/></Link>}
                 {right.includes('profile') && <Link to='/profile'><AccountCircleRounded/></Link>}
                 {right.includes('menu') && <MoreHorizRounded/>}
                 {right.includes('home') && <HomeIcon/>}

@@ -9,6 +9,7 @@ const postSchema = new mongoose.Schema ({
     endDate: Array,
     schedules: Array,
     about: String,
+    photo: String,
     requirements: Array,
     applications: Array
 })

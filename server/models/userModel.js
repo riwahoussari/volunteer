@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema ({
     bio: String,
     skills: Array,
     //
+    applications: Array,
     events: Array,
     likes: Array
 })

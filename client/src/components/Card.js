@@ -6,6 +6,7 @@ export default function Card({post, auth}){
     let color;
     const today = new Date().getTime();
     if(new Date(post.endDate.join(' ')).getTime() < today){color = 'red'}
+    else if(new Date(post.startDate.join(' ')).getTime() < today && post.endDate.length === 0){color = 'red'}
     else if(new Date(post.startDate.join(' ')).getTime() > today){color = 'blue'}
     else if(new Date(post.endDate.join(' ')).getTime() > today && 
     new Date(post.startDate.join(' ')).getTime() < today){color = 'green'}
