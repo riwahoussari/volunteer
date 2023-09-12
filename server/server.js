@@ -235,10 +235,36 @@ app.get('/applications/post/:postId', (req, res)=>{
             res.json({success: true, auth: {auth: true, user: {...application.userInfo, _id: req.user._id}}})
         })
     }else{
-        res.json({success: false, message: 'user not authenticated'})
+        res.json({success: false, message: 'user unauthorized'})
     }
 })
-
+// get applications for orgs seeApplications page
+app.get('/applications/:postId', (req, res) => {
+    if(req.isAuthenticated() && req.user.userType === 'org'){
+        Application.find({postId: req.params.postId}).then(applications=>{
+            res.json({success: true, applications})
+        })
+    }else{res.json({success: false, message: 'user unauthorized'})}
+})
+// update application status (accept/refject)
+app.patch('/applications/:action/:appId', (req, res)=>{
+    if(req.isAuthenticated() && req.user.userType === 'org'){
+        if(req.params.action === 'accept'){
+            Application.findOneAndUpdate({_id: req.params.appId}, {status: 'accepted'})
+            .then(res.json({success: true}))
+        } else if (req.params.action === 'reject'){
+            Application.findOneAndUpdate({_id: req.params.appId}, {status: 'rejected'})
+            .then(res.json({success: true}))
+        } else if (req.params.action === 'attended'){
+            Application.findOneAndUpdate({_id: req.params.appId}, {attendance: 'true'})
+            .then(res.json({success: true}))
+        } else if (req.params.action === 'didNotAttend'){
+            Application.findOneAndUpdate({_id: req.params.appId}, {attendance: 'false'})
+            .then(res.json({success: true}))
+        }
+        
+    }else{res.json({success: false, message: 'user unauthorized'})}
+})
 //get org's my posts
 app.get('/org/posts/:categ', (req, res)=>{
     let today = new Date().getTime();    

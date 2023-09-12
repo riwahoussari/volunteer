@@ -86,6 +86,7 @@ export default function PostApplyPage(){
         {infoFetch.auth && !infoFetch.auth.auth && navigate('../../../login', {replace: true})}
         {userInfo.auth && userInfo.user.userType === 'org' && navigate('../../../', {replace: true})}
         {infoFetch.auth && infoFetch.post && infoFetch.org && <>
+        {console.log(infoFetch)}
         <Header 
             icons={{left: ['back'], right: []}}
             text={''}

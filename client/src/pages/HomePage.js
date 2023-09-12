@@ -24,10 +24,12 @@ export function HomeUserDecode(){
         email: arr[9].split('=')[1],
         gender: arr[10].split('=')[1],
         phoneNb: arr[11].split('=')[1].split('+').join(''),
-        profilePic: arr[12].split('=')[1]
+        profilePic: arr[12].split('=')[1],
+        applications: arr[13].split('=')[1].split(',')
     }
+    sessionStorage.setItem('userInfo', JSON.stringify({auth: true, user}) )
     useEffect(()=>{
-        navigate('../../../', {replace: true, state: {auth: {auth: true, user}}})
+        navigate('../../../', {replace: true})
     }, [])
 }
 

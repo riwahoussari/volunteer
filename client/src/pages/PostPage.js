@@ -41,7 +41,7 @@ export default function PostPage(){
                     else if(new Date(data.post.endDate.join(' ')).getTime() > today && 
                     new Date(data.post.startDate.join(' ')).getTime() < today){color.current = 'green'}
                     // check if all spots are registered
-                    if(Number(data.post.volNb[0]) >= Number(data.post.volNb[1])){noMoreSpots.current = true}
+                    if(data.post.volNb[0] >= data.post.volNb[1]){noMoreSpots.current = true}
                 })
                 .catch(err => {
                     setPostFetch({post: null, isPending: false, error: err.message})
@@ -183,7 +183,7 @@ export default function PostPage(){
                     )
                 )}
                 {userInfo.auth && userInfo.user.userType === 'org' && userInfo.user._id === orgFetch.org._id && 
-                    <Link key={'button'} to={`/posts/${postId}/applications`} >
+                    <Link key={'button'} to={`/posts/${postId}/applications`} state={{post: postFetch.post}} >
                         <div className="apply-now-btn">See Applications</div>
                     </Link> 
                 }

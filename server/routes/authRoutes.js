@@ -32,7 +32,8 @@ authRouter.get('/google/redirect', passport.authenticate('google', {failureRedir
             email: req.user.email,
             gender: req.user.gender,
             phoneNb: req.user.phoneNb,
-            profilePic: req.user.profilePic
+            profilePic: req.user.profilePic,
+            applications: req.user.applications
         }).toString();
         res.redirect('http://localhost:3000/home/user/decode?' + user)
     }

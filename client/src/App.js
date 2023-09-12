@@ -13,6 +13,7 @@ import {Register, RegisterUserStep1, RegisterUserStep2, RegisterUserStep3, Regis
 import OrgPostsPage from './pages/OrgPostsPage.js'
 import {CreatePostStep1, CreatePostStep2, CreatePostStep3} from './pages/CreatePostPage.js'
 import MyPostsPage from './pages/myPostsPage';
+import ApplicationsPage from './pages/ApplicationsPage.js'
 
 
 
@@ -32,7 +33,7 @@ const router = createBrowserRouter(
 
       <Route path='/posts/:postId' >
         <Route index element={<PostPage/>}/>
-        <Route path='applications' element={<UserProfilePage/>}/>
+        <Route path='applications' element={<ApplicationsPage/>}/>
       </Route>
       <Route path='/posts/apply/:postId' element={<PostApplyPage/>}></Route>
 
