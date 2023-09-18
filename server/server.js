@@ -4,7 +4,8 @@ const app = express()
 import mongoose from "mongoose";
 import passport from 'passport';
 import session from 'express-session';
-import MongoStore from 'connect-mongo'
+import MongoStore from 'connect-mongo';
+import User from './models/userModel.js';
 import Post from './models/postModel.js';
 import Org from './models/orgModel.js'
 import Application from './models/applicationModel.js';
@@ -35,7 +36,6 @@ import cors from 'cors'
 app.use(cors({origin: 'http://localhost:3000', credentials: true}))
 //auth routes
 import authRouter from './routes/authRoutes.js'
-import User from './models/userModel.js';
 app.use('/auth', authRouter)
 //get all posts
 app.get('/posts/:categ', (req, res)=>{
